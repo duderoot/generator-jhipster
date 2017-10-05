@@ -18,6 +18,8 @@
 -%>
 package <%=packageName%>.web.rest.errors;
 
+import <%=packageName%>.web.rest.util.HeaderUtil;
+
 import org.springframework.core.annotation.AnnotationUtils;
 <%_ if (databaseType !== 'no' && databaseType !== 'cassandra') { _%>
 import org.springframework.dao.ConcurrencyFailureException;
@@ -42,7 +44,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -119,27 +120,12 @@ public class ExceptionTranslator implements ProblemHandling {
         return create(ex, problem, request);
     }
 
-    /**
-     * Override default handler to take ResponseStatus annotation into account
-     */
-    @Override
-    public ResponseEntity<Problem> handleThrowable(
-        @Nonnull final Throwable throwable,
-        @Nonnull final NativeWebRequest request) {
-        ResponseStatus responseStatus = AnnotationUtils.findAnnotation(throwable.getClass(), ResponseStatus.class);
-        if (responseStatus != null) {
-            Problem problem = Problem.builder()
-                .withStatus(new HttpStatusAdapter(responseStatus.value()))
-                .withTitle(responseStatus.reason().isEmpty() ? responseStatus.value().getReasonPhrase() : responseStatus.reason() )
-                .withDetail(throwable.getMessage())
-                .build();
-            return create(throwable, problem, request);
-        } else {
-            return create(Status.INTERNAL_SERVER_ERROR, throwable, request);
-        }
+    @ExceptionHandler(BadRequestAlertException.class)
+    public ResponseEntity<Problem> handleBadRequestAlertException(BadRequestAlertException ex, NativeWebRequest request) {
+        return create(ex, request, HeaderUtil.createFailureAlert(ex.getEntityName(), ex.getErrorKey(), ex.getMessage()));
     }
-
     <%_ if (databaseType !== 'no' && databaseType !== 'cassandra') { _%>
+
     @ExceptionHandler(ConcurrencyFailureException.class)
     public ResponseEntity<Problem> handleConcurrencyFailure(ConcurrencyFailureException ex, NativeWebRequest request) {
         Problem problem = Problem.builder()
