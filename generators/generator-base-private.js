@@ -711,15 +711,7 @@ module.exports = class extends Generator {
         `this.${relationship.otherEntityName}Service
             .query({filter: '${relationship.otherEntityRelationshipName.toLowerCase()}-is-null'})
             .subscribe((res: ResponseWrapper) => {
-                if (${relationshipFieldNameIdCheck}) {
                     this.${variableName} = res.json;
-                } else {
-                    this.${relationship.otherEntityName}Service
-                        .find(${relationshipFieldName}${dto === 'no' ? '.id' : 'Id'})
-                        .subscribe((subRes: ${relationship.otherEntityAngularName}) => {
-                            this.${variableName} = [subRes].concat(res.json);
-                        }, (subRes: ResponseWrapper) => this.onError(subRes.json));
-                }
             }, (res: ResponseWrapper) => this.onError(res.json));`;
             } else if (relationship.relationshipType !== 'one-to-many') {
                 variableName = relationship.otherEntityNameCapitalizedPlural.toLowerCase();
