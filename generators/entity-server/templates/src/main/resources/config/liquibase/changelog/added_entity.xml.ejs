@@ -217,6 +217,7 @@
             <%_ } _%>
             <%_ for (idx in relationships) {
                     let loadColumnType = 'numeric';
+                    relationshipType = relationships[idx].relationshipType;
                     if (relationships[idx].relationshipValidate === true && relationships[idx].relationshipRequired
                         && (relationshipType === "many-to-one"
                             || (relationshipType === "one-to-one" && relationships[idx].ownerSide === true
